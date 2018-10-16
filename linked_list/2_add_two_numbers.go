@@ -2,6 +2,7 @@ package main
 
 import "fmt"
 
+// go run init.go 2_add_two_numbers.go
 func main() {
 	l1 := newList([]int{8, 9, 9}) // 5	// 9 8
 	l2 := newList([]int{2})       // 5	// 1
@@ -12,10 +13,6 @@ func main() {
 	}
 }
 
-type ListNode struct {
-	Val  int
-	Next *ListNode
-}
 
 // 遍历两个链表，取出各自的数字再相加（难以解决整数溢出的问题，1560 / 1563 个通过测试用例，取值求解不可行）
 // 遍历链表，相互相加记进位。注意特殊情况的处理
@@ -70,17 +67,3 @@ func traverse(cur *ListNode, carryBit bool) (remainNums []int) {
 	return
 }
 
-func newList(nums []int) *ListNode {
-	n := len(nums)
-	if n == 0 {
-		return nil
-	}
-	head := &ListNode{Val: nums[0], Next: nil}
-	cur := head
-	for i := 1; i < n; i++ {
-		newNode := &ListNode{Val: nums[i], Next: nil}
-		cur.Next = newNode
-		cur = newNode
-	}
-	return head
-}
