@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 // go run init.go xxx.go
 type ListNode struct {
 	Val  int
@@ -19,4 +21,15 @@ func newList(nums []int) *ListNode {
 		cur = newNode
 	}
 	return head
+}
+
+func (cur *ListNode) String() string {
+	counts := 0
+	var nums []int
+	for cur != nil {
+		nums = append(nums, cur.Val)
+		counts++
+		cur = cur.Next
+	}
+	return fmt.Sprintf("%d nodes: %v", counts, nums)
 }
