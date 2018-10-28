@@ -1,12 +1,10 @@
 package main
 
-import (
-	"fmt"
-)
+import "fmt"
 
 func main() {
-	fmt.Println(findMedianSortedArrays1([]int{1, 2, 3}, []int{1, 2})) // 2
-	fmt.Println(findMedianSortedArrays1([]int{1, 2}, []int{3, 4}))    // 2.5
+	fmt.Println(findMedianSortedArrays([]int{1, 2, 3}, []int{1, 2})) // 2
+	fmt.Println(findMedianSortedArrays([]int{1, 2}, []int{3, 4}))    // 2.5
 }
 
 //
@@ -57,7 +55,43 @@ func mergeArr(arr1, arr2 []int) []int {
 // 优化2
 // 将问题的本质抽象出来：在两个有序数组中寻找第 K 大的数
 // O(logN) 的高效查找想到二分查找，两个有序数组的高效查找也是这个思路
-// TODO
 //
-func findKth(nums1, nums2 []int, k int) {
+func findMedianSortedArrays(nums1 []int, nums2 []int) float64 {
+	c := len(nums1) + len(nums2)
+	if c%2 == 1 {
+		return float64(findKth(nums1, nums2, c/2))
+	}
+	return (float64(findKth(nums1, nums2, c/2-1)) + float64(findKth(nums1, nums2, c/2))) / 2
+}
+func findKth(nums1, nums2 []int, k int) int {
+	if len(nums1) > len(nums2) {
+		nums1, nums2 = nums2, nums1
+	}
+	if len(nums1) == 0 {
+		return nums2[k]
+	}
+	if k == len(nums1)+len(nums2)-1 {
+		return max(nums1[len(nums1)-1], nums2[len(nums2)-1])
+	}
+
+	i := min(len(nums1)-1, k/2)
+	j := min(len(nums2)-1, k-i)
+	if nums1[i] < nums2[j] {
+		return findKth(nums1[i:], nums2[:j], j)
+	}
+	return findKth(nums1[:i], nums2[j:], i)
+}
+
+func min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
+}
+
+func max(x, y int) int {
+	if x > y {
+		return x
+	}
+	return y
 }
