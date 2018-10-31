@@ -26,8 +26,7 @@ func spiralOrder(matrix [][]int) []int {
 	if len(matrix) == 1 {
 		return matrix[0]
 	}
-	var nums []int
-	return order(matrix, 0, len(matrix[0])-1, 0, len(matrix)-1, nums)
+	return order(matrix, 0, len(matrix[0])-1, 0, len(matrix)-1, []int{})
 }
 
 func order(matrix [][]int, start, end int, up, down int, nums []int) []int {
