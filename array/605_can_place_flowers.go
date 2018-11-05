@@ -3,7 +3,7 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println(canPlaceFlowers([]int{0}, 1)) // false
+	fmt.Println(canPlaceFlowers([]int{0}, 1)) // true
 }
 
 // 种花的本质是标识 0，即是一边遍历一边修改为 1
