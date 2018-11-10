@@ -14,10 +14,7 @@ func (s *Stack) Len() int {
 }
 
 func (s *Stack) IsEmpty() bool {
-	if s.Len() == 0 {
-		return true
-	}
-	return false
+	return s.Len() == 0
 }
 
 func (s *Stack) Push(elem int) {
