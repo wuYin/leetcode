@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 // 定义二叉树结构
 type Tree struct {
 	root *TreeNode
@@ -36,6 +38,25 @@ func (tree *Tree) BFSInsert(v int) {
 		} else {
 			curNode.Right = &TreeNode{Val: v}
 			return
+		}
+	}
+}
+
+// 按层遍历
+func (tree *Tree) BFSTraverse(node *TreeNode) {
+	if node == nil {
+		return
+	}
+	q := []*TreeNode{tree.root}
+	for len(q) > 0 {
+		cur := q[0]
+		q = q[1:]
+		fmt.Printf("%v ", cur.Val)
+		if cur.Left != nil {
+			q = append(q, cur.Left)
+		}
+		if cur.Right != nil {
+			q = append(q, cur.Right)
 		}
 	}
 }
