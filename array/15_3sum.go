@@ -11,55 +11,48 @@ func main() {
 	fmt.Println(threeSum([]int{-2, 0, 0, 2, 2}))       // [[-2 0 2]]
 }
 
-//
-// 双指针法
-// 遍历元素，取剩余元素的 head 和 tail 指针，二者向中间移动，如果和为该元素的相反数，则找到三元组
-// 注意剔除连续相等的数，不然会导致三元组重复，如 [-2,0,0,2,2]
-//
+// 处理结果与元素原顺序无关，可排序预处理，方便去重
+// 使用双指针遍历后部分剩余数组
 func threeSum(nums []int) [][]int {
-	if len(nums) <= 2 {
-		return nil
-	}
-	sort.Ints(nums)
+	sort.Ints(nums) // [-4 -1 -1 0 1 2]
+	n := len(nums)
 	var res [][]int
-
-	for i := 0; i < len(nums); i++ {
-		remain := 0 - nums[i]
-		head, tail := i+1, len(nums)-1
-
-		if nums[i] > 0 { // 优化：之后全是正数，不可能组成三元组
-			break
+	for i, num := range nums {
+		if num > 0 {
+			break // 优化，再往后三个正数和不可能为 0
 		}
-		if i > 0 && nums[i] == nums[i-1] { // 剔除遍历到连续相等的数
+
+		// 第一层遍历数向前去重
+		if i > 0 && nums[i] == nums[i-1] { // 因为双指针从 i 之后取，不能使用 nums[i] == nums[i+1] 向后去重
 			continue
 		}
 
-		for head < tail {
-			sum := nums[head] + nums[tail]
+		l, r := i+1, n-1
+		for l < r {
+			sum := num + nums[l] + nums[r]
 			switch {
-			case sum == remain: // 找到三元组
-				res = append(res, []int{nums[i], nums[head], nums[tail]})
-				for head < tail && nums[head] == nums[head+1] { // 剔除待选数字中连续相等的数
-					head++
+			case sum > 0:
+				r--
+			case sum < 0:
+				l++
+			default:
+				res = append(res, []int{num, nums[l], nums[r]})
+				// 第二层候选数向后去重
+				for l < r && nums[l] == nums[l+1] {
+					l++
 				}
-				for head < tail && nums[tail] == nums[tail-1] {
-					tail--
+				for r > l && nums[r] == nums[r-1] {
+					r--
 				}
-				head++
-				tail--
-			case sum < remain: // 往后走
-				head++
-			case sum > remain: // 往前走
-				tail--
+				l++
+				r--
 			}
 		}
 	}
 	return res
 }
 
-//
 // twoSum 的思路，不好
-//
 func badTwoSum(nums []int) [][]int {
 	// 避开全是 0 的 case	 // ugly
 	if len(nums) >= 3 {
@@ -109,7 +102,7 @@ func badTwoSum(nums []int) [][]int {
 func intStr(nums []int) string {
 	str := ""
 	for _, num := range nums {
-		str += fmt.Sprintf("%d", num)
+		str += fmt.Sprintf("%d_", num)
 	}
 	return str
 }
