@@ -3,45 +3,67 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println(searchRange([]int{5, 7, 7, 8, 8, 10}, 8))
+	fmt.Println(searchRange1([]int{5, 7, 7, 8, 8, 10}, 8)) // [3, 4]
+	fmt.Println(searchRange2([]int{5, 7, 7, 8, 8, 10}, 8)) // [3, 4]
+	fmt.Println(searchRange2([]int{1}, 1))                 // [0, 0]
 }
 
-//
-// 二分查找
-// 注意找到一个数后向前、向后遍历找到边界值即可
-//
-func searchRange(nums []int, target int) []int {
-	loc := binarySearch(nums, target)
-	if loc == -1 {
-		return []int{-1, - 1}
+// 直接二分查找
+// O(N) // not ok
+func searchRange1(nums []int, target int) []int {
+	n := len(nums)
+	i := binarySearch(nums, 0, n-1, target)
+	if i == -1 {
+		return []int{-1, -1}
 	}
-	left, right := loc, loc
-	for left > 0 {
-		if nums[left] != nums[left-1] {
-			break
+
+	// 找到后向两侧延伸
+	l, r := i, i
+	for j := i - 1; j >= 0; j-- {
+		if nums[j] == target {
+			l = j
 		}
-		left--
 	}
-	for right < len(nums)-1 {
-		if nums[right] != nums[right+1] {
-			break
+	for j := i + 1; j < n; j++ {
+		if nums[j] == target {
+			r = j
 		}
-		right++
 	}
-	return []int{left, right}
+	return []int{l, r}
 }
 
-func binarySearch(nums []int, target int) int {
-	left, right := 0, len(nums)-1
-	for left <= right {
-		mid := (right + left) / 2
+// 改进的二分搜索
+func searchRange2(nums []int, target int) []int {
+	l := edgeBinSearch(nums, true, target)
+	r := edgeBinSearch(nums, false, target)
+	return []int{l, r}
+}
+
+// 普通二分搜索在匹配到 target 时直接 return
+// 在本题搜索时在匹配到 target 之后依旧向边缘走当做没匹配到，注意 2 个边界条件
+// O(logN) // ok
+func edgeBinSearch(nums []int, leftest bool, target int) int {
+	n := len(nums)
+	l, r := 0, n-1
+	for l <= r {
+		mid := (l + r) / 2
 		switch {
-		case nums[mid] > target:
-			right = mid - 1
-		case nums[mid] < target:
-			left = mid + 1
+		case target < nums[mid]:
+			r = mid - 1
+		case target > nums[mid]:
+			l = mid + 1
 		default:
-			return mid
+			if leftest {
+				if mid == 0 || nums[mid] > nums[mid-1] { // 不再继续向左走的 2 个边界条件
+					return mid
+				}
+				r = mid - 1 // 继续在左侧找
+			} else {
+				if mid == n-1 || nums[mid] < nums[mid+1] {
+					return mid
+				}
+				l = mid + 1 // 继续在右侧找
+			}
 		}
 	}
 	return -1
