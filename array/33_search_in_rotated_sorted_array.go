@@ -3,33 +3,31 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println(search([]int{4, 5, 6, 7, 0, 1, 2}, 0))
-	fmt.Println(search([]int{4, 5, 6, 7, 0, 1, 2}, 3))
+	fmt.Println(search([]int{4, 5, 6, 7, 0, 1, 2}, 0)) // 4
+	fmt.Println(search([]int{4, 5, 6, 7, 0, 1, 2}, 3)) // -1
 }
 
-//
-// 与有序数组相关的搜索，应当优先联想到二分查找的思路
-// 旋转的本质是改变部分序列的排序规则，应当发现以下规律：
-// 最左边数 < 中间数则左侧有序，最右边数 > 中间数则右侧有序，再利用二分查找的思路即可
-//
+// 类二分搜索
+// 最左边数 < 中间数则左侧有序，最右边数 > 中间数则右侧有序
+// 在缩小搜索区域时，一直只在确定的有序区域内查找
 func search(nums []int, target int) int {
-	left, right := 0, len(nums)-1
-	for left <= right {
-		mid := left + (right-left)/2
+	l, r := 0, len(nums)-1
+	for l <= r {
+		mid := (l + r) / 2
 		switch {
-		case nums[mid] == target:
+		case nums[mid] == target: // bingo
 			return mid
-		case nums[mid] < nums[right]: // 右侧有序
-			if nums[mid] < target && nums[right] >= target {
-				left = mid + 1 // 在右侧有序区
+		case nums[l] <= nums[mid]: // 左侧有序
+			if nums[l] <= target && target < nums[mid] { // 保证 target 一定在有序的左侧内
+				r = mid - 1
 			} else {
-				right = mid - 1 // 进入左侧无序区查找
+				l = mid + 1
 			}
-		case nums[mid] >= nums[left]: // 左侧有序
-			if nums[mid] > target && nums[left] <= target {
-				right = mid - 1 // 在左侧有序区
+		case nums[mid] <= nums[r]: // 右侧有序
+			if nums[mid] < target && target <= nums[r] { // 保证 target 一定在有序的右侧内
+				l = mid + 1
 			} else {
-				left = mid + 1 // 进入右侧无序区查找
+				r = mid - 1
 			}
 		}
 	}
