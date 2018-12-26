@@ -14,7 +14,7 @@ func main() {
 // 处理结果与元素原顺序无关，可排序预处理，方便去重
 // 使用双指针遍历后部分剩余数组
 func threeSum(nums []int) [][]int {
-	sort.Ints(nums) // [-4 -1 -1 0 1 2]
+	sort.Ints(nums) // [-4 -1 -1 0 1 2] // 预排序有 2 个好处：去重 & 指导双指针的下一步方向
 	n := len(nums)
 	var res [][]int
 	for i, num := range nums {
