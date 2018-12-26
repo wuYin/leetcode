@@ -1,96 +1,108 @@
+// 参考 https://goleetcode.io/2018/11/19/array/4-median-of-two-sorted-arrays
 package main
 
 import "fmt"
 
 func main() {
-	fmt.Println(findMedianSortedArrays([]int{1, 2, 3}, []int{1, 2})) // 2
-	fmt.Println(findMedianSortedArrays([]int{1, 2}, []int{3, 4}))    // 2.5
+	fmt.Println(findMedianSortedArrays1([]int{}, []int{}))                  // OJ 无此类异常 case
+	fmt.Println(findMedianSortedArrays1([]int{1, 3, 5}, []int{2, 4, 6}))    // 3.5
+	fmt.Println(findMedianSortedArrays1([]int{1, 3, 5, 7}, []int{2, 4, 6})) // 4
+	fmt.Println(findMedianSortedArrays2([]int{1, 3, 5}, []int{2, 4, 6}))    // 3.5
 }
 
-//
-// 合并两个有序数组再排序，分数组长度情况取中位数即可
-//
+// 合并两个数组后直接取中位数即可
+// 时间复杂度 O(M+N) // not ok
 func findMedianSortedArrays1(nums1 []int, nums2 []int) float64 {
-	// nums := append(nums1, nums2...)
-	// sort.Ints(nums) 			// 快排的复杂度为 O(NlogN)
-	nums := mergeArr(nums1, nums2) // 归并排序的 merge 操作复杂度为 O(N)
-	mid := len(nums) / 2
-	if len(nums)%2 == 0 {
-		return float64(nums[mid]+nums[mid-1]) / 2
+	res := merge(nums1, nums2)
+	n := len(res)
+	if n == 0 {
+		return -1
 	}
-	return float64(nums[mid])
+	if n%2 == 0 {
+		return float64(res[n/2-1]+res[n/2]) / 2 // len(nums)/2 是中位数 pair 的后一个值
+	}
+	return float64(res[n/2])
 }
 
-//
-// 优化1
-// 合并有序数组后仍有序，自然而然应该想到归并排序的 merge 操作
-//
-func mergeArr(arr1, arr2 []int) []int {
-	n1, n2 := len(arr1), len(arr2)
+// 合并两个有序数组
+func merge(nums1, nums2 []int) []int {
+	n1, n2 := len(nums1), len(nums2)
+	i, j := 0, 0
 	res := make([]int, 0, n1+n2)
-	j, k := 0, 0
-	for i := 0; i < n1+n2; i++ {
-		// 若两个数组长度不一，需避免出现溢出
-		if j >= n1 {
-			res = append(res, arr2[k:]...)
-			break
-		}
-		if k >= n2 {
-			res = append(res, arr1[j:]...)
-			break
-		}
-		// 正常
-		if arr1[j] < arr2[k] {
-			res = append(res, arr1[j])
+	for i < n1 && j < n2 {
+		switch {
+		case nums1[i] < nums2[j]:
+			res = append(res, nums1[i])
+			i++
+		case nums1[i] > nums2[j]:
+			res = append(res, nums2[j])
 			j++
-		} else {
-			res = append(res, arr2[k])
-			k++
+		default:
+			res = append(res, nums1[i], nums2[j])
+			i++
+			j++
 		}
+	}
+
+	// 处理未合并部分
+	if i < n1 {
+		res = append(res, nums1[i:]...) // 循环退出时 i 未被处理，需合并 [i:]
+	}
+	if j < n2 {
+		res = append(res, nums2[j:]...)
 	}
 	return res
 }
 
-//
-// 优化2
-// 将问题的本质抽象出来：在两个有序数组中寻找第 K 大的数
-// O(logN) 的高效查找想到二分查找，两个有序数组的高效查找也是这个思路
-//
-func findMedianSortedArrays(nums1 []int, nums2 []int) float64 {
-	c := len(nums1) + len(nums2)
-	if c%2 == 1 {
-		return float64(findKth(nums1, nums2, c/2))
+// 类二分查找分而治之的思路
+// O(log(M+N)) // ok
+func findMedianSortedArrays2(nums1 []int, nums2 []int) float64 {
+	n1, n2 := len(nums1), len(nums2)
+	if n1+n2 == 0 {
+		return -1
 	}
-	return (float64(findKth(nums1, nums2, c/2-1)) + float64(findKth(nums1, nums2, c/2))) / 2
+	if (n1+n2)%2 == 0 {
+		l := findKth(nums1, nums2, (n1+n2)/2)
+		r := findKth(nums1, nums2, (n1+n2)/2+1) // 此处 +1 与上边 len(mergedNums)/2 同理
+		return float64(l+r) / 2
+	}
+	return float64(findKth(nums1, nums2, (n1+n2)/2+1))
 }
+
+// 在两个有序数组中查找第 k 大的数
+// 第 k 大的数即 nums 中索引为 k-1 的数，在舍弃区域比较值时都要 -1 处理
 func findKth(nums1, nums2 []int, k int) int {
-	if len(nums1) > len(nums2) {
-		nums1, nums2 = nums2, nums1
-	}
-	if len(nums1) == 0 {
-		return nums2[k]
-	}
-	if k == len(nums1)+len(nums2)-1 {
-		return max(nums1[len(nums1)-1], nums2[len(nums2)-1])
+	n1, n2 := len(nums1), len(nums2)
+	if n1 > n2 {
+		n1, n2 = n2, n1
+		nums1, nums2 = nums2, nums1 // 为避免数组长度的分类讨论，先做预处理
 	}
 
-	i := min(len(nums1)-1, k/2)
-	j := min(len(nums2)-1, k-i)
-	if nums1[i] < nums2[j] {
-		return findKth(nums1[i:], nums2[:j], j)
+	if n1 == 0 {
+		return nums2[k-1] // bingo
 	}
-	return findKth(nums1[:i], nums2[j:], i)
+
+	if k == 1 {
+		return min(nums1[0], nums2[0]) // bingo
+	}
+
+	k1 := min(k/2, n1) // 避免越界
+	k2 := k - k1       // 不能理想的 k/2, k/2 划分
+
+	// fmt.Println(nums1, k1-1, nums2, k2-1)
+
+	switch {
+	case nums1[k1-1] < nums2[k2-1]:
+		return findKth(nums1[k1:], nums2, k2) // 彻底舍弃区域 1
+	case nums1[k1-1] > nums2[k2-1]:
+		return findKth(nums1, nums2[k2:], k1) // 彻底舍弃区域 3
+	default:
+		return nums1[k1-1] // bingo
+	}
 }
 
 func min(x, y int) int {
 	if x < y {
-		return x
-	}
-	return y
-}
-
-func max(x, y int) int {
-	if x > y {
 		return x
 	}
 	return y
