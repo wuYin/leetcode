@@ -1,53 +1,47 @@
+// 参考 https://goleetcode.io/2018/11/20/array/31-next-permutation
 package main
 
+import "fmt"
+
 func main() {
-	// nextPermutation([]int{1, 2, 3})
-	// nextPermutation([]int{3, 2, 1})
-	// nextPermutation([]int{1, 1, 5})
-	// nextPermutation([]int{1, 2, 7, 4, 3, 1})
-	nextPermutation([]int{1, 3, 3})
+	nums := []int{1, 2, 7, 4, 3, 1}
+	nextPermutation(nums)
+	fmt.Println(nums) // [1 3 1 2 4 7] // bingo
 }
 
-//
-// 题目的本质是一般规律：从后向前找出第一个降序点，从前向后找向上最接近的数，调换，将后面序列转置保证后序是升序为最小排列
-// 遇到这类题，使用长数组做示例，再找其中的规律。不要硬磕用位数去解决，看清楚题目的本质后用尽可能简单的方式解决，并满足复杂度要求
-//
+// 数组规律题
+// 从后往前找第一个下降点 i，再从后往前找它的 ceil 值，交换
+// 再将 [i+1:] 之后的数据从降序反转为升序，为最小序列
 func nextPermutation(nums []int) {
+	// 处理降序的 case
+	desc := true
 	n := len(nums)
-	// 先检查是否为最大序
-	isMaxSeq := true
-	for i := 0; i < n-1; i++ {
+	for i := range nums[:n-1] {
 		if nums[i] < nums[i+1] {
-			isMaxSeq = false
+			desc = false
 		}
 	}
-	// 已是最大排列，则原地旋转
-	if isMaxSeq {
+	if desc {
 		reverse(nums)
 		return
 	}
-	// 向前遍历找出要调换的值
-	pre := n - 1
-	for i := n - 1; i > 0; i-- {
-		if nums[i] > nums[i-1] {
-			pre = i - 1 // 找到第一个降序点 // 2
+
+	// 从后向前找第一个下降的点
+	var i int
+	for i = n - 1; i > 0; i-- {
+		if nums[i-1] < nums[i] {
+			i-- // 找到 2
 			break
 		}
 	}
-	nearest := pre + 1
-	for i := pre + 1; i < n; i++ {
-		if nums[i] > nums[pre] && nums[i] <= nums[nearest] { // <= 找到最靠后的向上最接近的数 // 3
-			nearest = i
+
+	// 从后向前，找向上最接近的值
+	for j := n - 1; j > i; j-- {
+		if nums[j] > nums[i] {
+			nums[j], nums[i] = nums[i], nums[j] // 交换 2 和 3 	// [1 3 7 4 2 1]
+			break
 		}
 	}
-	// 交换二者的位置	// 1 3 7 4 2 1
-	nums[pre], nums[nearest] = nums[nearest], nums[pre]
-	// 倒置 pre+1 之后的数据，保证后续数据是升序	// 1 3 1 2 4 7
-	reverse(nums[pre+1:])
-}
 
-func reverse(nums []int) {
-	for i, j := 0, len(nums)-1; i < j; i, j = i+1, j-1 {
-		nums[i], nums[j] = nums[j], nums[i]
-	}
+	reverse(nums[i+1:]) // 反转 4 2 1	// [1 3 1 2 4 7]
 }
