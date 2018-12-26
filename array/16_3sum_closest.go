@@ -6,32 +6,38 @@ import (
 )
 
 func main() {
-	fmt.Println(threeSumClosest1([]int{-1, 2, 1, -4}, 1))                 // 2
-	fmt.Println(threeSumClosest2([]int{0, 2, 1, -3}, 1))                  // 0
-	fmt.Println(threeSumClosest2([]int{1, 2, 4, 8, 16, 32, 64, 128}, 84)) // 84
+	fmt.Println(threeSumClosest1([]int{-1, 2, 1, -4}, 1))                // 2
+	fmt.Println(threeSumClosest([]int{0, 2, 1, -3}, 1))                  // 0
+	fmt.Println(threeSumClosest([]int{1, 2, 4, 8, 16, 32, 64, 128}, 84)) // 84
 }
 
 // 同样也是指针法
-func threeSumClosest2(nums []int, target int) int {
+// 和 15 一样，排序预处理能知道双指针移动的方向，记录最小 abs
+func threeSumClosest(nums []int, target int) int {
 	sort.Ints(nums)
-	minSum := nums[0] + nums[1] + nums[2]
-	minAbs := abs(minSum - target)
-	for i := 0; i < len(nums); i++ {
-		if i > 0 && nums[i] == nums[i-1] {
+	n := len(nums)
+	minAbs := 1<<31 - 1
+	minSum := 0
+
+	for i, num := range nums {
+		if i > 0 && nums[i] == nums[i-1] { // 优化：可选的去重
 			continue
 		}
-		head, tail := i+1, len(nums)-1
-		for head < tail {
-			sum := nums[i] + nums[head] + nums[tail]
-			newAbs := abs(sum - target)
-			if newAbs < minAbs { // 找到了更接近的和
-				minAbs = newAbs
+
+		l, r := i+1, n-1
+		for l < r {
+			sum := num + nums[l] + nums[r]
+			if abs(target-sum) < minAbs {
+				minAbs = abs(target - sum)
 				minSum = sum
 			}
-			if sum < target { // 值小了，往后移，可能更接近
-				head++
-			} else {
-				tail-- // 值大了，往前移动
+			switch {
+			case sum < target:
+				l++
+			case sum > target:
+				r--
+			default:
+				return target
 			}
 		}
 	}
@@ -56,11 +62,4 @@ func threeSumClosest1(nums []int, target int) int {
 		}
 	}
 	return minSum
-}
-
-func abs(x int) int {
-	if x < 0 {
-		return -x
-	}
-	return x
 }
